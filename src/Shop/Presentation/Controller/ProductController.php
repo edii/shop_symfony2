@@ -54,38 +54,52 @@ class ProductController
 
     public function indexAction(Request $request)
     {
-        $form = $this->getProductFilterForm();
-        $form->handleRequest($request);
-        if ($form->isSubmitted()) {
-            /** @var GetFilteredProductsQuery $productQuery */
-            $productQuery = $form->getData();
-        } else {
-            $productQuery = new GetFilteredProductsQuery();
-        }
-        $this->queryBus->handle($productQuery);
-        /** @var Pagerfanta $pager */
-        $pager = $productQuery->getResult();
-        $products = $pager->getCurrentPageResults();
-        $category = $this->getCategoryById($productQuery->getCategory());
-        /** @var FantaPaginatorAdapter $adapter */
-        $adapter = $pager->getAdapter();
-        $categories = $adapter->getAggregations();
+//        $form = $this->getProductFilterForm();
+//        $form->handleRequest($request);
+//        if ($form->isSubmitted()) {
+//            /** @var GetFilteredProductsQuery $productQuery */
+//            $productQuery = $form->getData();
+//        } else {
+//            $productQuery = new GetFilteredProductsQuery();
+//        }
+//        $this->queryBus->handle($productQuery);
+//        /** @var Pagerfanta $pager */
+//        $pager = $productQuery->getResult();
+//        $products = $pager->getCurrentPageResults();
+//        $category = $this->getCategoryById($productQuery->getCategory());
+//        /** @var FantaPaginatorAdapter $adapter */
+//        $adapter = $pager->getAdapter();
+//        $categories = $adapter->getAggregations();
+//        $response = new Response(
+//            $this->engine->render(
+//                ':product:index.html.twig',
+//                [
+//                    'query' => $productQuery,
+//                    'category' => $category,
+//                    'pager' => $pager,
+//                    'products' => $products,
+//                    'categories' => $categories,
+//                ]
+//            )
+//        );
+//        if (!array_filter($request->query->all())) {
+//            $response->setSharedMaxAge(3600);
+//        }
+//
+//        return $response;
+
         $response = new Response(
             $this->engine->render(
                 ':product:index.html.twig',
                 [
-                    'query' => $productQuery,
-                    'category' => $category,
-                    'pager' => $pager,
-                    'products' => $products,
-                    'categories' => $categories,
+                    'query' => [],
+                    'category' => [],
+                    'pager' => [],
+                    'products' => [],
+                    'categories' => [],
                 ]
             )
         );
-        if (!array_filter($request->query->all())) {
-            $response->setSharedMaxAge(3600);
-        }
-
         return $response;
     }
 
@@ -154,7 +168,7 @@ class ProductController
      * @param string $productId
      * @return \Symfony\Component\Form\FormInterface
      */
-    private function getAddProductForm($productId)
+    private function getAddProductForm(\string $productId)
     {
         $form = $this->formFactory->createNamed(
             '',
