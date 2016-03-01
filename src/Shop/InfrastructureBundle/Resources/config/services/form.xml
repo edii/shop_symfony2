@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service class="Shop\Presentation\Form\LoginType" id="shop.form.type.login">
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\Presentation\Form\AddProductType" id="shop.form.type.add_product">
+            <argument type="service" id="product_repository"/>
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\Presentation\Form\AddressType" id="shop.form.type.address">
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\InfrastructureBundle\Form\Type\GatewayType" id="shop.form.type.gateway">
+            <argument type="service" id="payum.static_registry"/>
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\Presentation\Form\OrderType" id="shop.form.type.order_type">
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\Presentation\Form\UserType" id="shop.form.type.user">
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\Presentation\Form\ProfileType" id="shop.form.type.profile">
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\Presentation\Form\ProductFilterType" id="shop.form.type.product_filter_type">
+            <argument type="service" id="category_view_repository"/>
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\Presentation\Form\AdminProductFilterType" id="shop.form.type.admin_product_filter_type">
+            <argument type="service" id="category_view_repository"/>
+            <argument type="string">%currency%</argument>
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\Presentation\Form\OptionType" id="shop.form.option_type">
+            <argument id="option_view_repository" type="service"/>
+            <tag name="form.type"/>
+        </service>
+
+        <service class="Shop\Presentation\Form\ProductType" id="shop.form.product_type">
+            <argument id="category_view_repository" type="service"/>
+            <argument type="string">%currency%</argument>
+            <tag name="form.type"/>
+        </service>
+    </services>
+
+</container>

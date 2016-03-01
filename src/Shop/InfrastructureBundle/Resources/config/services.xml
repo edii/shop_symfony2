@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <imports>
+        <import resource="services/cqrs.xml" />
+        <import resource="services/repositories.xml" />
+        <import resource="services/form.xml" />
+        <import resource="services/controller.xml" />
+    </imports>
+
+    <services>
+        <service class="Shop\Application\Factory\PaymentTokenFactory" id="shop.payment_token_factory">
+            <argument id="payum.static_registry" type="service"/>
+            <argument id="payum.security.token_factory" type="service"/>
+            <argument type="string">%currency%</argument>
+        </service>
+
+        <!--<service class="Shop\InfrastructureBundle\Transformer\ProductElasticaToModelTransformer" id="product_transformer">-->
+            <!--<argument id="category_view_repository" type="service"/>-->
+        <!--</service>-->
+        <!--<service class="Shop\InfrastructureBundle\Finder\TransformedFinder" id="shop.finder.transformed_finder">-->
+            <!--<argument id="fos_elastica.index.search.product" type="service"/>-->
+            <!--<argument id="product_transformer" type="service"/>-->
+        <!--</service>-->
+
+        <service class="Shop\InfrastructureBundle\Validator\IsAvailableValidator" id="shop.is_available_validator">
+            <argument id="product_view_repository" type="service"/>
+            <tag name="validator.constraint_validator" alias="is_available_validator"/>
+        </service>
+
+        <service class="Shop\InfrastructureBundle\Security\OrderVoter" id="shop.order_voter">
+            <tag name="security.voter"/>
+        </service>
+
+        <service id="faker.generator" factory-class="Faker\Factory" class="Faker\Generator" factory-method="create">
+            <argument type="string">%locale%</argument>
+        </service>
+
+        <service class="Shop\Presentation\Twig\PriceExtension" id="shop.price_extension" public="false">
+            <argument type="string">%locale%</argument>
+            <argument type="string">%currency%</argument>
+            <tag name="twig.extension"/>
+        </service>
+
+        <service class="Shop\Presentation\Twig\LocaleExtension" id="shop.country_extension">
+            <argument type="string">%locales%</argument>
+            <tag name="twig.extension"/>
+        </service>
+
+        <service class="Shop\InfrastructureBundle\UrlCollector\UrlCollector" id="shop.url_collector">
+            <argument type="collection">
+                <argument type="service" id="shop.index_url_collector"/>
+                <argument type="service" id="shop.product_url_collector"/>
+            </argument>
+        </service>
+        <service class="Shop\InfrastructureBundle\UrlCollector\IndexUrlCollector" id="shop.index_url_collector" public="false">
+            <argument id="router" type="service"/>
+            <argument type="string">%locales%</argument>
+        </service>
+        <service class="Shop\InfrastructureBundle\UrlCollector\ProductUrlCollector" id="shop.product_url_collector" public="false">
+            <argument id="router" type="service"/>
+            <argument id="product_view_repository" type="service"/>
+            <argument type="string">%locales%</argument>
+        </service>
+
+        <service class="Shop\InfrastructureBundle\Security\OAuthUserProvider" id="shop.security.oauth_user_provider">
+            <argument id="doctrine" type="service"/>
+            <argument type="string">\Shop\InfrastructureBundle\Security\User</argument>
+            <argument type="collection">
+                <argument type="string" key="facebook">facebookId</argument>
+                <argument type="string" key="google">googleId</argument>
+            </argument>
+        </service>
+    </services>
+</container>

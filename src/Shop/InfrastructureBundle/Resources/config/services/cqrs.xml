@@ -1,0 +1,156 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- Query Bus -->
+        <service id="query_bus" alias="simple_bus.query_bus"/>
+        <service id="simple_bus.query_bus"
+                 public="false"
+                 class="SimpleBus\Message\Bus\Middleware\MessageBusSupportingMiddleware">
+            <tag name="message_bus" type="query" middleware_tag="query_bus_middleware"/>
+        </service>
+
+        <service id="simple_bus.query_bus.delegates_to_message_handler_middleware"
+                 public="false"
+                 class="SimpleBus\Message\Handler\DelegatesToMessageHandlerMiddleware">
+            <argument type="service" id="simple_bus.query_bus.query_handler_resolver"/>
+            <tag name="query_bus_middleware" priority="-1000"/>
+        </service>
+
+        <service id="simple_bus.query_bus.class_based_query_name_resolver"
+                 public="false"
+                 class="SimpleBus\Message\Name\ClassBasedNameResolver"/>
+
+        <service id="simple_bus.query_bus.callable_resolver"
+                 public="false"
+                 class="SimpleBus\Message\CallableResolver\ServiceLocatorAwareCallableResolver">
+            <argument type="collection">
+                <argument type="service" id="service_container"/>
+                <argument type="string">get</argument>
+            </argument>
+        </service>
+
+        <service id="simple_bus.query_bus.query_handler_map"
+                 public="false"
+                 class="SimpleBus\Message\CallableResolver\CallableMap">
+            <argument type="collection"/>
+            <argument type="service" id="simple_bus.query_bus.callable_resolver"/>
+        </service>
+
+        <service id="simple_bus.query_bus.query_handler_resolver"
+                 public="false"
+                 class="SimpleBus\Message\Handler\Resolver\NameBasedMessageHandlerResolver">
+            <argument type="service" id="simple_bus.query_bus.class_based_query_name_resolver"/>
+            <argument type="service" id="simple_bus.query_bus.query_handler_map"/>
+        </service>
+
+        <service id="simple_bus.query_bus.finishes_query_before_handling_next_middleware"
+                 public="false"
+                 class="SimpleBus\Message\Bus\Middleware\FinishesHandlingMessageBeforeHandlingNext">
+            <tag name="query_bus_middleware" priority="1000"/>
+        </service>
+        <!-- -->
+
+        <!-- Handlers -->
+        <service class="Shop\Application\Service\CategoryService" id="shop.category_service">
+            <argument type="service" id="category_view_repository"/>
+            <tag name="query_handler" handles="Shop\Application\Query\GetCategoryByIdQuery" method="getCategoryById"/>
+        </service>
+
+        <service class="Shop\Application\Service\UserService" id="shop.user_service">
+            <argument id="shop.customer_repository" type="service"/>
+            <argument id="shop.customer_view_repository" type="service"/>
+            <argument id="security.token_storage" type="service"/>
+            <argument id="security.encoder_factory.generic" type="service"/>
+            <argument type="service" id="event_bus"/>
+            <tag name="command_handler" handles="Shop\Application\Command\RegisterUserCommand" method="registerUser"/>
+            <tag name="command_handler" handles="Shop\Application\Command\UpdateProfileCommand" method="updateProfile"/>
+            <tag name="query_handler" handles="Shop\Application\Query\GetActualCustomerQuery" method="getActualCustomer"/>
+        </service>
+
+        <service class="Shop\Application\Service\ProductService" id="shop.product_service">
+            <argument type="service" id="product_repository"/>
+            <argument type="service" id="product_view_repository"/>
+            <argument type="service" id="category_repository"/>
+            <argument type="service" id="option_repository"/>
+            <argument type="service" id="event_bus"/>
+            <tag name="command_handler" handles="Shop\Application\Command\CreateProductCommand" method="createProduct"/>
+            <tag name="command_handler" handles="Shop\Application\Command\UpdateProductCommand" method="updateProduct"/>
+            <tag name="query_handler" handles="Shop\Application\Query\GetFilteredProductsQuery" method="getFilteredProducts"/>
+            <tag name="query_handler" handles="Shop\Application\Query\GetProductAvailabilityByIdQuery" method="getProductAvailabilityById"/>
+            <tag name="query_handler" handles="Shop\Application\Query\GetProductByIdQuery" method="getProductById"/>
+        </service>
+
+        <service class="Shop\Application\Service\CartService" id="shop.cart_service">
+            <argument type="service" id="cart_repository"/>
+            <argument type="service" id="cart_view_repository"/>
+            <argument type="service" id="product_repository"/>
+            <argument type="service" id="product_view_repository"/>
+            <tag name="command_handler" handles="Shop\Application\Command\AddProductCommand" method="addProduct"/>
+            <tag name="command_handler" handles="Shop\Application\Command\RemoveProductCommand" method="removeProduct"/>
+            <tag name="query_handler" handles="Shop\Application\Query\GetCartQuery" method="getCart"/>
+        </service>
+
+        <service class="Shop\Application\Service\OrderService" id="shop.order_service">
+            <argument id="security.token_storage" type="service"/>
+            <argument id="order_repository" type="service"/>
+            <argument id="order_view_repository" type="service"/>
+            <argument id="cart_repository" type="service"/>
+            <argument id="event_bus" type="service"/>
+            <tag name="command_handler" handles="Shop\Application\Command\CreateOrderCommand" method="createOrder"/>
+            <tag name="query_handler" handles="Shop\Application\Query\GetCustomerOrdersQuery" method="getCustomerOrders"/>
+            <tag name="query_handler" handles="Shop\Application\Query\GetOrderByIdQuery" method="getOrderById"/>
+        </service>
+
+        <service class="Shop\Application\Service\PaymentService" id="shop.application.service.payment_service">
+            <argument id="payum.static_registry" type="service"/>
+            <argument id="payum.security.http_request_verifier" type="service"/>
+            <argument id="event_bus" type="service"/>
+            <tag name="command_handler" handles="Shop\Application\Command\VerifyRequestCommand" method="verifyRequest"/>
+        </service>
+        <!-- -->
+
+        <!-- Events -->
+        <service class="Shop\Application\Subscriber\CustomerViewUpdateSubscriber" id="shop.customer_view_update_subscriber">
+            <argument id="shop.customer_view_repository" type="service"/>
+            <tag name="event_subscriber" subscribes_to="Shop\Application\Event\ProfileUpdatedEvent"/>
+        </service>
+        <service class="Shop\Application\Subscriber\SuccessfulRegistrationSubscriber" id="shop.successful_registration_subscriber">
+            <argument id="security.token_storage" type="service"/>
+            <tag name="event_subscriber" subscribes_to="Shop\Application\Event\UserRegisteredEvent"/>
+        </service>
+
+        <!--<service class="Shop\Application\Subscriber\ProductViewUpdateSubscriber" id="shop.application.subscriber.elastica_populate_subscriber">-->
+            <!--<argument id="fos_elastica.object_persister.search.product" type="service"/>-->
+            <!--<argument id="product_view_repository" type="service"/>-->
+            <!--<tag name="event_subscriber" subscribes_to="Shop\Application\Event\ProductSavedEvent" method="onProductSave"/>-->
+        <!--</service>-->
+
+        <service class="Shop\Application\Subscriber\CaptureOrderSubscriber" id="shop.capture_order_subscriber">
+            <argument type="service" id="shop.payment_token_factory"/>
+            <argument type="service" id="event_dispatcher"/>
+            <tag name="event_subscriber" subscribes_to="Shop\Application\Event\OrderCreatedEvent"/>
+        </service>
+
+        <service class="Shop\Application\Subscriber\PaymentFlashMessageSubscriber" id="shop.payment_flash_message_subscriber">
+            <argument id="session" type="service"/>
+            <argument id="cart_repository" type="service"/>
+            <argument id="translator" type="service"/>
+            <tag name="event_subscriber" subscribes_to="Shop\Application\Event\RequestVerifiedEvent"/>
+        </service>
+        <service class="Shop\Application\Subscriber\PaymentEmailMessageSubscriber" id="shop.application.subscriber.payment_email_message_subscriber">
+            <argument id="order_view_repository" type="service"/>
+            <argument id="mailer" type="service"/>
+            <argument id="translator" type="service"/>
+            <argument id="templating.engine.twig" type="service"/>
+        </service>
+        <service class="Shop\Application\Subscriber\MarkOrderAsPaidSubscriber" id="shop.mark_order_as_paid_subscriber">
+            <argument id="order_repository" type="service"/>
+        </service>
+        <!-- -->
+    </services>
+    
+</container>

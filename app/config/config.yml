@@ -1,0 +1,169 @@
+imports:
+    - { resource: parameters.yml }
+    - { resource: security.yml }
+    - { resource: services.yml }
+    - { resource: elastica.yml }
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# http://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    locale: en
+    locales: en|ru
+    currency: USD
+
+framework:
+    esi: { enabled: true }
+    translator:        { fallbacks: [%locale%] }
+    default_locale:    %locale%
+    secret:            "%secret%"
+    router:
+        resource: "%kernel.root_dir%/config/routing.yml"
+        strict_requirements: ~
+    form:            ~
+    csrf_protection: ~
+    templating:
+        engines: ['twig']
+        #assets_version: SomeVersionScheme
+    default_locale:    "%locale%"
+    trusted_hosts:     ~
+    trusted_proxies:    [192.0.0.1]
+    session:
+        # handler_id set to null will use default session handler from php.ini
+        handler_id:    snc_redis.session.handler
+    fragments:         ~
+    http_method_override: true
+    assets:
+        base_path: ~
+        packages:
+            app:
+                base_path: /bundles/shopinfrastructure/
+
+# Twig Configuration
+twig:
+    debug:            "%kernel.debug%"
+    strict_variables: "%kernel.debug%"
+    form_themes:
+        - bootstrap_3_layout.html.twig
+
+# Doctrine Configuration
+doctrine:
+    dbal:
+        driver:         pdo_mysql
+        unix_socket:    "%database_socket%"
+        dbname:         "%database_name%"
+        user:           "%database_user%"
+        password:       "%database_password%"
+        charset:        UTF8
+
+    orm:
+        auto_generate_proxy_classes: "%kernel.debug%"
+        naming_strategy: doctrine.orm.naming_strategy.underscore
+        auto_mapping: false
+        mappings:
+            ShopDomain:
+                type: yml
+                prefix: Shop\Domain
+                dir: "%kernel.root_dir%/../src/Shop/InfrastructureBundle/Resources/config/doctrine/Domain"
+                is_bundle: false
+            Role:
+                type: yml
+                prefix: Symfony\Component\Security\Core\Role
+                dir: "%kernel.root_dir%/../src/Shop/InfrastructureBundle/Resources/config/doctrine/Role"
+                is_bundle: false
+            Security:
+                type: yml
+                prefix: Shop\InfrastructureBundle\Security
+                dir: "%kernel.root_dir%/../src/Shop/InfrastructureBundle/Resources/config/doctrine/Security"
+                is_bundle: false
+            Payum:
+                type: yml
+                prefix: Shop\InfrastructureBundle\Model
+                dir: "%kernel.root_dir%/../src/Shop/InfrastructureBundle/Resources/config/doctrine/Payum"
+                is_bundle: false
+        resolve_target_entities:
+            Shop\Domain\Customer\CustomerInterface: Shop\InfrastructureBundle\Security\User
+
+# Swiftmailer Configuration
+swiftmailer:
+    transport: "%mailer_transport%"
+    host:      "%mailer_host%"
+    username:  "%mailer_user%"
+    password:  "%mailer_password%"
+    spool:     { type: memory }
+
+payum:
+    security:
+        token_storage:
+            Shop\InfrastructureBundle\Model\Token: { doctrine: orm }
+
+    storages:
+        Shop\InfrastructureBundle\Model\Payment: { doctrine: orm }
+
+    gateways:
+        offline:
+            offline: ~
+
+        paypal:
+            paypal_express_checkout_nvp:
+                username: %paypal.express_checkout.username%
+                password: %paypal.express_checkout.password%
+                signature: %paypal.express_checkout.signature%
+                sandbox: %paypal.express_checkout.sandbox%
+
+snc_redis:
+    clients:
+        default:
+            type: predis
+            alias: default
+            dsn: redis://localhost
+            logging: %kernel.debug%
+        session:
+            type: predis
+            alias: session
+            dsn: redis://localhost
+            logging: %kernel.debug%
+    session:
+        client: session
+        use_as_default: true
+        ttl: 864000
+    doctrine:
+        metadata_cache:
+            client: default
+            entity_manager: default
+        query_cache:
+            client: default
+            entity_manager: default
+
+event_bus:
+    logging:
+        enabled: %kernel.debug%
+
+command_bus:
+    logging:
+        enabled: %kernel.debug%
+
+stof_doctrine_extensions:
+    default_locale: %locale%
+    orm:
+        default:
+            timestampable: true
+
+hwi_oauth:
+    firewall_name: main
+    resource_owners:
+        facebook:
+            type:                facebook
+            client_id:           %facebook_client_id%
+            client_secret:       %facebook_client_secret%
+            scope:               "email"
+            paths:
+                email: email
+            options:
+                display: page
+        google:
+            type:                google
+            client_id:           %google_client_id%
+            client_secret:       %google_client_secret%
+            scope:              "https://www.googleapis.com/auth/userinfo.email"
+            paths:
+                email: email

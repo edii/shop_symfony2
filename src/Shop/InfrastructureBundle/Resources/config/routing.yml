@@ -1,0 +1,78 @@
+login_route:
+    path:     /login
+    defaults: { _controller: security_controller:loginAction }
+
+user_registration:
+    path:     /register
+    defaults: { _controller: security_controller:registerAction }
+
+homepage:
+    path:     /
+    methods:  [ GET ]
+    defaults: { _controller: product_controller:indexAction }
+
+products_filter:
+    path:     /products/filter
+    methods:  [ GET ]
+    defaults: { _controller: product_controller:filterAction }
+
+product:
+    path:     /products/{id}
+    methods:  [ GET ]
+    defaults: { _controller: product_controller:viewAction }
+
+products:
+    path:     /products
+    methods:  [ GET ]
+    defaults: { _controller: product_controller:indexAction }
+
+cart:
+    path:     /cart
+    methods:  [ GET, POST ]
+    defaults: { _controller: cart_controller:indexAction }
+
+add_product:
+    path:     /cart/product
+    methods:  [ POST ]
+    defaults: { _controller: cart_controller:addProductAction }
+
+remove_product:
+    path:     /cart/product/{id}
+    methods:  [ DELETE ]
+    defaults: { _controller: cart_controller:removeProductAction }
+
+order:
+    path:     /orders/{id}
+    defaults: { _controller: order_controller:viewAction }
+
+nav:
+    path:     /profile/nav
+    defaults: { _controller: profile_controller:navAction }
+
+profile:
+    path:     /profile
+    defaults: { _controller: profile_controller:indexAction }
+
+payment_done:
+    path:     /payment/done
+    defaults: { _controller: payment_controller:doneAction }
+
+admin:
+    path: /admin
+    defaults:
+        _controller: FrameworkBundle:Redirect:redirect
+        route: admin_products
+        permanent: true
+
+admin_products:
+    path:     /admin/products
+    methods:  [ GET ]
+    defaults: { _controller: admin_product_controller:indexAction }
+
+admin_product_create:
+    path:     /admin/products/create
+    defaults: { _controller: admin_product_controller:createAction }
+
+admin_product:
+    path:     /admin/products/{id}
+    defaults: { _controller: admin_product_controller:viewAction }

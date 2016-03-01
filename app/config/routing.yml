@@ -1,0 +1,42 @@
+root:
+    path: /
+    defaults:
+        _controller: FrameworkBundle:Redirect:urlRedirect
+        path: /%locale%/
+        permanent: true
+
+login_check:
+    path:     /login_check
+
+logout:
+    path:     /logout
+
+payum_capture:
+    resource: "@PayumBundle/Resources/config/routing/capture.xml"
+
+payum_authorize:
+    resource: "@PayumBundle/Resources/config/routing/authorize.xml"
+
+payum_notify:
+    resource: "@PayumBundle/Resources/config/routing/notify.xml"
+
+hwi_oauth_redirect:
+    resource: "@HWIOAuthBundle/Resources/config/routing/redirect.xml"
+    prefix:   /connect
+
+hwi_oauth_login:
+    resource: "@HWIOAuthBundle/Resources/config/routing/login.xml"
+    prefix:   /login
+
+facebook_login:
+    path: /login_check_facebook
+
+google_login:
+    path: /login_check_google
+
+shop:
+    resource: "@ShopInfrastructureBundle/Resources/config/routing.yml"
+    prefix:   /{_locale}
+    defaults: { _locale: en }
+    requirements:
+        _locale: %locales%

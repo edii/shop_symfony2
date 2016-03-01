@@ -1,0 +1,138 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="shop.customer_view_repository" alias="shop.predis_customer_view_repository"/>
+        <service class="Shop\InfrastructureBundle\Repository\DBAL\CustomerViewRepository" id="shop.dbal_customer_view_repository">
+            <argument type="string">users</argument>
+            <argument id="doctrine.dbal.default_connection" type="service"/>
+        </service>
+        <service class="Shop\InfrastructureBundle\Repository\Predis\CustomerViewRepository" id="shop.predis_customer_view_repository">
+            <argument id="snc_redis.default" type="service"/>
+            <argument id="shop.dbal_customer_view_repository" type="service"/>
+        </service>
+
+        <service id="shop.customer_repository" alias="shop.orm_customer_repository"/>
+        <service id="shop.orm_customer_repository"
+                 public="false"
+                 class="Shop\InfrastructureBundle\Repository\ORM\CustomerRepository"
+                 factory-service="doctrine.orm.default_entity_manager"
+                 factory-method="getRepository">
+            <argument type="string">Shop\InfrastructureBundle\Security\User</argument>
+        </service>
+
+        <service id="category_view_repository" alias="predis_category_view_repository"/>
+        <service id="dbal_category_view_repository"
+                 public="false"
+                 class="Shop\InfrastructureBundle\Repository\DBAL\DirectoryViewRepository">
+            <argument type="string">categories</argument>
+            <argument type="string">Shop\Domain\Category\CategoryView</argument>
+            <argument type="service" id="doctrine.dbal.default_connection"/>
+        </service>
+        <service id="predis_category_view_repository"
+                 public="false"
+                 class="Shop\InfrastructureBundle\Repository\Predis\DirectoryViewRepository">
+            <argument type="string">categories</argument>
+            <argument type="string">Shop\Domain\Category\CategoryView</argument>
+            <argument type="service" id="snc_redis.default"/>
+            <argument type="service" id="dbal_category_view_repository"/>
+        </service>
+
+        <service id="option_view_repository" alias="predis_option_view_repository"/>
+        <service id="dbal_option_view_repository"
+                 public="false"
+                 class="Shop\InfrastructureBundle\Repository\DBAL\DirectoryViewRepository">
+            <argument type="string">options</argument>
+            <argument type="string">Shop\Domain\Option\OptionView</argument>
+            <argument type="service" id="doctrine.dbal.default_connection"/>
+        </service>
+        <service id="predis_option_view_repository"
+                 public="false"
+                 class="Shop\InfrastructureBundle\Repository\Predis\DirectoryViewRepository">
+            <argument type="string">options</argument>
+            <argument type="string">Shop\Domain\Option\OptionView</argument>
+            <argument type="service" id="snc_redis.default"/>
+            <argument type="service" id="dbal_option_view_repository"/>
+        </service>
+
+        <service id="category_repository" alias="orm_category_repository"/>
+        <service id="orm_category_repository"
+                 public="false"
+                 class="Shop\InfrastructureBundle\Repository\ORM\CategoryRepository"
+                 factory-service="doctrine.orm.default_entity_manager"
+                 factory-method="getRepository">
+            <argument type="string">\Shop\Domain\Category\Category</argument>
+        </service>
+
+        <service id="option_repository" alias="orm_option_repository"/>
+        <service id="orm_option_repository"
+                 public="false"
+                 class="Shop\InfrastructureBundle\Repository\ORM\OptionRepository"
+                 factory-service="doctrine.orm.default_entity_manager"
+                 factory-method="getRepository">
+            <argument type="string">\Shop\Domain\Option\Option</argument>
+        </service>
+
+        <service id="product_view_repository" alias="shop.predis_product_view_repository" />
+        <!--<service id="shop.elastica_product_view_repository"-->
+                 <!--class="Shop\InfrastructureBundle\Repository\Elastica\ProductViewRepository"-->
+                 <!--public="false"-->
+                 <!--factory-service="fos_elastica.manager.orm"-->
+                 <!--factory-method="getRepository">-->
+            <!--<argument type="string">Shop\Domain\Product\Product</argument>-->
+            <!--<call method="setType">-->
+                <!--<argument id="fos_elastica.index.search.product" type="service"/>-->
+            <!--</call>-->
+            <!--<call method="setModelTransformer">-->
+                <!--<argument id="product_transformer" type="service"/>-->
+            <!--</call>-->
+        <!--</service>-->
+
+        <service class="Shop\InfrastructureBundle\Repository\Predis\ProductViewRepository" id="shop.predis_product_view_repository">
+            <argument id="snc_redis.default" type="service"/>
+            <!--<argument id="shop.elastica_product_view_repository" type="service"/>-->
+        </service>
+
+        <service id="product_repository" alias="orm_product_repository"/>
+        <service id="orm_product_repository"
+                 public="false"
+                 class="Shop\InfrastructureBundle\Repository\ORM\ProductRepository"
+                 factory-service="doctrine.orm.default_entity_manager"
+                 factory-method="getRepository">
+            <argument type="string">\Shop\Domain\Product\Product</argument>
+        </service>
+
+        <service id="order_view_repository" alias="dbal_order_view_repository"/>
+        <service id="dbal_order_view_repository"
+                 class="Shop\InfrastructureBundle\Repository\DBAL\OrderViewRepository">
+            <argument type="service" id="doctrine.dbal.default_connection"/>
+        </service>
+
+        <service id="order_repository" alias="orm_order_repository"/>
+        <service id="orm_order_repository"
+                 public="false"
+                 class="Shop\InfrastructureBundle\Repository\ORM\OrderRepository"
+                 factory-service="doctrine.orm.default_entity_manager"
+                 factory-method="getRepository">
+            <argument type="string">\Shop\Domain\Order\Order</argument>
+        </service>
+
+        <service id="cart_view_repository" alias="session_cart_view_repository"/>
+        <service id="session_cart_view_repository"
+                 class="Shop\InfrastructureBundle\Repository\Session\CartViewRepository">
+            <argument type="service" id="session"/>
+            <argument type="service" id="product_view_repository"/>
+        </service>
+
+        <service id="cart_repository" alias="session_cart_repository"/>
+        <service id="session_cart_repository"
+                 class="Shop\InfrastructureBundle\Repository\Session\CartRepository">
+            <argument type="service" id="session"/>
+            <argument type="service" id="product_repository"/>
+        </service>
+    </services>
+
+</container>
